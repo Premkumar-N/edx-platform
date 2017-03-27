@@ -31,6 +31,26 @@ class TestDumpToNeo4jCommandBase(SharedModuleStoreTestCase):
     """
     @classmethod
     def setUpClass(cls):
+        """
+        Creates two courses; one that's just a course module, and one that
+        looks like:
+                        course
+                           |
+                        chapter
+                           |
+                        sequential
+                           |
+                        vertical
+                        / |  \  \
+                       /  |   \  ----------
+                      /   |    \           \
+                     /    |     ---         \
+                    /     |        \         \
+                html -> problem -> video -> video2
+
+        The side-pointing arrows (->) are PRECEDES relationships; the more
+        vertical lines are PARENT_OF relationships.
+        """
         super(TestDumpToNeo4jCommandBase, cls).setUpClass()
         cls.course = CourseFactory.create()
         cls.chapter = ItemFactory.create(parent=cls.course, category='chapter')
@@ -228,7 +248,70 @@ class TestModuleStoreSerializer(TestDumpToNeo4jCommandBase):
         """
         nodes, relationships = self.mss.serialize_course(self.course.id)
         self.assertEqual(len(nodes), 9)
-        self.assertEqual(len(relationships), 7)
+        # the course has 7 "PARENT_OF" relationships and 3 "PRECEDES"
+        self.assertEqual(len(relationships), 10)
+
+    @staticmethod
+    def _extract_relationship_pairs(relationships, relationship_type):
+        """
+        Helper function that takes a list of py2neo `Relationship` objects,
+        filters them by their `relationship_type`, and returns a list of
+        tuples of the locations of the Relationships' constituent nodes.
+        """
+        relationship_pairs = [
+            tuple([node["location"] for node in rel.nodes()])
+            for rel in relationships if rel.type() == relationship_type
+        ]
+        return relationship_pairs
+
+    @staticmethod
+    def _extract_location_pair(xblock1, xblock2):
+        """
+        Helper function that takes two XBlocks and returns a tuple of the
+        string representations of their locations.
+        locations.
+        """
+        return (unicode(xblock1.location), unicode(xblock2.location))
+
+    def assertBlockPairIsRelationship(self, xblock1, xblock2, relationships, relationship_type):
+        """
+        Helper assertion that a pair of xblocks have a certain kind of
+        relationship with one another.
+        """
+        relationship_pairs = self._extract_relationship_pairs(relationships, relationship_type)
+        location_pair = self._extract_location_pair(xblock1, xblock2)
+        self.assertIn(location_pair, relationship_pairs)
+
+    def assertBlockPairIsNotRelationship(self, xblock1, xblock2, relationships, relationship_type):
+        """
+        The opposite of `assertBlockPairIsRelationship`: asserts that a pair
+        of xblocks do NOT have a certain kind of relationship.
+        """
+        relationship_pairs = self._extract_relationship_pairs(relationships, relationship_type)
+        location_pair = self._extract_location_pair(xblock1, xblock2)
+        self.assertNotIn(location_pair, relationship_pairs)
+
+    def test_precedes_relationship(self):
+        """
+        Tests that two nodes that should have a precedes relationship have it.
+        """
+        __, relationships = self.mss.serialize_course(self.course.id)
+        self.assertBlockPairIsRelationship(self.video, self.video2, relationships, "PRECEDES")
+        self.assertBlockPairIsNotRelationship(self.video2, self.video, relationships, "PRECEDES")
+        self.assertBlockPairIsNotRelationship(self.vertical, self.video, relationships, "PRECEDES")
+        self.assertBlockPairIsNotRelationship(self.html, self.video, relationships, "PRECEDES")
+
+    def test_parent_relationship(self):
+        """
+        Test that two nodes that should have a parent_of relationship have it.
+        """
+        __, relationships = self.mss.serialize_course(self.course.id)
+        self.assertBlockPairIsRelationship(self.vertical, self.video, relationships, "PARENT_OF")
+        self.assertBlockPairIsRelationship(self.vertical, self.html, relationships, "PARENT_OF")
+        self.assertBlockPairIsRelationship(self.course, self.chapter, relationships, "PARENT_OF")
+        self.assertBlockPairIsNotRelationship(self.course, self.video, relationships, "PARENT_OF")
+        self.assertBlockPairIsNotRelationship(self.video, self.vertical, relationships, "PARENT_OF")
+        self.assertBlockPairIsNotRelationship(self.video, self.html, relationships, "PARENT_OF")
 
     def test_nodes_have_indices(self):
         """
