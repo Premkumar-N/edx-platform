@@ -10,7 +10,7 @@ from common.test.acceptance.fixtures.course import CourseFixture, XBlockFixtureD
 from common.test.acceptance.pages.common.auto_auth import AutoAuthPage
 from common.test.acceptance.pages.common.logout import LogoutPage
 from common.test.acceptance.pages.common.utils import click_css
-from common.test.acceptance.pages.lms.courseware_search import CoursewareSearchPage
+from common.test.acceptance.pages.lms.course_home import CourseHomePage, CourseSearchResultsPage
 from common.test.acceptance.pages.studio.container import ContainerPage
 from common.test.acceptance.pages.studio.overview import CourseOutlinePage as StudioCourseOutlinePage
 from common.test.acceptance.pages.studio.utils import add_html_component, type_in_codemirror
@@ -52,7 +52,8 @@ class CoursewareSearchTest(UniqueCourseTest):
         self.addCleanup(remove_file, self.TEST_INDEX_FILENAME)
 
         super(CoursewareSearchTest, self).setUp()
-        self.courseware_search_page = CoursewareSearchPage(self.browser, self.course_id)
+
+        self.course_home_page = CourseHomePage(self.browser, self.course_id)
 
         self.studio_course_outline = StudioCourseOutlinePage(
             self.browser,
@@ -149,16 +150,10 @@ class CoursewareSearchTest(UniqueCourseTest):
             (bool) True if search term is found in resulting content; False if not found
         """
         self._auto_auth(self.USERNAME, self.EMAIL, False)
-        self.courseware_search_page.visit()
-        self.courseware_search_page.search_for_term(search_term)
-        return search_term in self.courseware_search_page.search_results.html[0]
-
-    def test_page_existence(self):
-        """
-        Make sure that the page is accessible.
-        """
-        self._auto_auth(self.USERNAME, self.EMAIL, False)
-        self.courseware_search_page.visit()
+        self.course_home_page.visit()
+        self.course_home_page.search_for_term(search_term)
+        course_search_results_page = CourseSearchResultsPage(self.browser, self.course_id).wait_for_page()
+        return search_term in course_search_results_page.search_results.text
 
     def test_search(self):
         """

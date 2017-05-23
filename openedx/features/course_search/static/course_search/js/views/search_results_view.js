@@ -24,7 +24,7 @@
             spinner: '.search-load-next .icon',
 
             initialize: function() {
-                this.$contentElement = $(this.contentElement);
+                this.$contentElement = this.contentElement ? $(this.contentElement) : $([]);
             },
 
             render: function() {
@@ -59,6 +59,7 @@
                     });
                     return item.render().el;
                 }, this);
+                // safe-lint: disable=javascript-jquery-append
                 this.$el.find('ol').append(items);
             },
 
