@@ -20,7 +20,6 @@ from social.apps.django_app.default.models import UserSocialAuth
 
 from django_comment_common import models
 from openedx.core.djangoapps.site_configuration.helpers import get_value
-from openedx.core.djangoapps.site_configuration.templatetags import configuration as configuration_tags
 from openedx.core.lib.api.test_utils import ApiTestCase, TEST_API_KEY
 from openedx.core.lib.time_zone_utils import get_display_time_zone
 from openedx.core.djangolib.testing.utils import CacheIsolationTestCase, skip_unless_lms
@@ -1020,10 +1019,6 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, UserAPITestCase):
                     }
                 }
             )
-
-    def test_register_form_platform_name(self):
-        pname = configuration_tags.platform_name()
-        self.assertEqual(pname, settings.PLATFORM_NAME)
 
     def test_register_form_level_of_education(self):
         self._assert_reg_field(
