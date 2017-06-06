@@ -45,11 +45,14 @@ define(
                         icon: '',
                         text: HtmlUtils.interpolateHtml(
                             // Translators: This is a 3 part text which tells the image requirements.
-                            gettext('Image requirements {lineBreak} {videoImageResoultion} {lineBreak} {videoImageSupportedFileFormats}'),   // eslint-disable-line max-len
+                            gettext('{ReqTextSpanStart}Image requirements{spanEnd}{lineBreak}{InstructionsSpanStart}{videoImageResoultion}{lineBreak} {videoImageSupportedFileFormats}{spanEnd}'),   // eslint-disable-line max-len
                             {
                                 videoImageResoultion: this.getVideoImageResolution(),
                                 videoImageSupportedFileFormats: this.getVideoImageSupportedFileFormats().humanize,
-                                lineBreak: HtmlUtils.HTML('<br>')
+                                lineBreak: HtmlUtils.HTML('<br>'),
+                                ReqTextSpanStart: HtmlUtils.HTML('<span class="requirements-text">'),
+                                InstructionsSpanStart: HtmlUtils.HTML('<span class="requirements-instructions">'),
+                                spanEnd: HtmlUtils.HTML('</span>')
                             }
                         ).toString()
                     }
@@ -204,7 +207,11 @@ define(
             },
 
             imageSelected: function(event, data) {
-                var errorMessage = this.validateImageFile(data.files[0]);
+                var errorMessage;
+                // If an error is already present above the video element, remove it.
+                this.clearErrorMessage(this.model.get('edx_video_id'));
+
+                errorMessage = this.validateImageFile(data.files[0]);
                 if (!errorMessage) {
                     // Do not trigger global AJAX error handler
                     data.global = false;    // eslint-disable-line no-param-reassign
@@ -291,7 +298,6 @@ define(
                             supportedFileFormats: this.getVideoImageSupportedFileFormats().humanize
                         }
                     );
-
                 } else if (imageFile.size > this.getVideoImageMaxSize().machine) {
                     errorMessage = StringUtils.interpolate(
                         // Translators: maxFileSizeInMB will be like 2 MB.
@@ -303,7 +309,7 @@ define(
                 } else if (imageFile.size < this.getVideoImageMinSize().machine) {
                     errorMessage = StringUtils.interpolate(
                         // Translators: minFileSizeInKB will be like 2 KB.
-                        gettext('The selected image must be smaller than {minFileSizeInKB}.'),
+                        gettext('The selected image must be larger than {minFileSizeInKB}.'),
                         {
                             minFileSizeInKB: this.getVideoImageMinSize().humanize
                         }
@@ -313,10 +319,16 @@ define(
                 return errorMessage;
             },
 
+            clearErrorMessage: function(videoId) {
+                var $thumbnailWrapperEl = $('.thumbnail-error-wrapper[data-video-id="' + videoId + '"]');
+                if ($thumbnailWrapperEl.length) {
+                    $thumbnailWrapperEl.remove();
+                }
+            },
+
             showErrorMessage: function(errorText) {
                 var videoId = this.model.get('edx_video_id'),
-                    $parentRowEl = $(this.$el.parent()),
-                    $thumbnailWrapperEl = $('.thumbnail-error-wrapper[data-video-id="' + videoId + '"]');
+                    $parentRowEl = $(this.$el.parent());
 
                 this.action = 'error';
                 this.setActionInfo(this.action, true);
@@ -327,11 +339,6 @@ define(
 
                 // We need to update data attr in DOM too so as to find our element on hover.
                 $parentRowEl.attr('data-video-id', videoId);
-
-                // If an error is already present above the video element, remove it.
-                if ($thumbnailWrapperEl.length) {
-                    $thumbnailWrapperEl.remove();
-                }
 
                 // Add error wrapper html before current video element row.
                 $parentRowEl.before(    // safe-lint: disable=javascript-jquery-insertion
@@ -349,12 +356,6 @@ define(
                 // the combined one row feel.
                 $('.thumbnail-error[data-video-id="' + videoId + '"]').hover(function() {
                     $('.thumbnail-error[data-video-id="' + videoId + '"]').toggleClass('blue-l5');
-                    //if ($('.thumbnail-error[data-video-id="' + videoId + '"]').hassClass('blue-l5')){
-                    //    $('.thumbnail-error[data-video-id="' + videoId + '"]').addClass('blue-l5');
-                    //} else {
-                    //    $('.thumbnail-error[data-video-id="' + videoId + '"]').removeClass('blue-l5');
-                    //}
-
                 });
             },
 
@@ -379,7 +380,7 @@ define(
                         currentRowClass = oddRowClass;
                     }
 
-                    // If the row is error row, save it's class so that it can be applied to it's corresponding row below.
+                    // If the row is error row, save it's class so that it can be applied to it's corresponding row.
                     if ($(this).hasClass('thumbnail-error-wrapper')) {
                         savedClass = currentRowClass;
                     }
@@ -387,7 +388,6 @@ define(
                     // If current iterated row is the row which generated error
                     // Apply the class same as it's corresponding error row. The class was saved.
                     if ($(this).hasClass('has-thumbnail-error')) {
-
                         // First remove previously added classes.
                         $(this).removeClass(evenRowClass);
                         $(this).removeClass(oddRowClass);
@@ -403,7 +403,6 @@ define(
                             evenRowClass = oddRowClass;
                             oddRowClass = currentRowClass;
                         }
-
                         // Reset the saved class after it has been applied.
                         savedClass = '';
                     } else {

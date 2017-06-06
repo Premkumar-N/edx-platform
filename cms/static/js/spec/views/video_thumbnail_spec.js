@@ -29,14 +29,14 @@ define(
             /**
              * Creates a list of video records.
              *
-             * @param {Integer} numVideos       Number of video elements to create.
              * @param {Object} modelData        Model data for video records.
+             * @param {Integer} numVideos       Number of video elements to create.
              * @param {Integer} videoViewIndex  Index of video on which videoThumbnailView would be based.
              */
-            createVideoListView = function(numVideos, modelData, videoViewIndex) {
-                var numVideos = numVideos || 1,   // eslint-disable-line no-redeclare
-                    modelData = modelData || {},  // eslint-disable-line no-redeclare
-                    videoViewIndex = videoViewIndex || 0,// eslint-disable-line no-redeclare,
+            createVideoListView = function(modelData, numVideos, videoViewIndex) {
+                var modelData = modelData || {},  // eslint-disable-line no-redeclare
+                    numVideos = numVideos || 1,   // eslint-disable-line no-redeclare
+                    videoViewIndex = videoViewIndex || 0,   // eslint-disable-line no-redeclare,
                     defaultData = {
                         client_video_id: 'foo.mp4',
                         duration: 42,
@@ -52,6 +52,7 @@ define(
                 videoListView = new PreviousVideoUploadListView({
                     collection: collection,
                     videoHandlerUrl: '/videos/course-v1:org.0+course_0+Run_0',
+                    videoImageUploadURL: IMAGE_UPLOAD_URL,
                     videoImageSettings: {
                         max_size: VIDEO_IMAGE_MAX_BYTES,
                         min_size: VIDEO_IMAGE_MIN_BYTES,
@@ -121,8 +122,8 @@ define(
             });
 
             it('does not show duration if not available', function() {
-                createVideoListView();({duration: 0});
-                expect($el.find('.thumbnail-wrapper .video-duration')).not.toExist();
+                createVideoListView({duration: 0});
+                expect($videoThumbnailEl.find('.thumbnail-wrapper .video-duration')).not.toExist();
             });
 
             it('shows the duration if available', function() {
@@ -157,7 +158,8 @@ define(
             });
 
             it('can upload image', function() {
-                var $thumbnail = $el.find('.thumbnail-wrapper'),
+                var videoViewIndex = 0,
+                    $thumbnail = $videoThumbnailEl.find('.thumbnail-wrapper'),
                     requests = AjaxHelpers.requests(this),
                     additionalSRText = videoThumbnailView.getSRText();
 
@@ -172,7 +174,12 @@ define(
                 verifyStateInfo($thumbnail, 'progress');
 
                 // Verify if POST request received for image upload
-                AjaxHelpers.expectRequest(requests, 'POST', IMAGE_UPLOAD_URL + '/dummy_id', new FormData());
+                AjaxHelpers.expectRequest(
+                    requests,
+                    'POST',
+                    IMAGE_UPLOAD_URL + '/dummy_id_' + videoViewIndex,
+                    new FormData()
+                );
 
                 // Send successful upload response
                 AjaxHelpers.respondWithJson(requests, {image_url: UPLOADED_IMAGE_URL});
@@ -190,7 +197,7 @@ define(
                 videoThumbnailView.chooseFile();
 
                 // Add image to upload queue and send POST request to upload image
-                $el.find('.upload-image-input').fileupload('add', {files: [createFakeImageFile()]});
+                $videoThumbnailEl.find('.upload-image-input').fileupload('add', {files: [createFakeImageFile()]});
 
                 AjaxHelpers.respondWithError(requests, 400);
 
@@ -246,9 +253,10 @@ define(
                     .fileupload('add', {files: [createFakeImageFile(VIDEO_IMAGE_MIN_BYTES - 10)]});
 
                 // Verify error message
-                expect($videoListEl.find('.thumbnail-error-wrapper').find('.action-text').html().trim()).toEqual(
+                expect($videoListEl.find('.thumbnail-error-wrapper').find('.action-text').html()
+                .trim()).toEqual(
                     'The selected image must be larger than ' +
-                    videoThumbnailView.getVideoImageMinSize().humanize + '.';
+                    videoThumbnailView.getVideoImageMinSize().humanize + '.'
                 );
             });
 
@@ -260,9 +268,10 @@ define(
                     .fileupload('add', {files: [createFakeImageFile(VIDEO_IMAGE_MAX_BYTES + 10)]});
 
                 // Verify error message
-                expect($videoListEl.find('.thumbnail-error-wrapper').find('.action-text').html().trim()).toEqual(
+                expect($videoListEl.find('.thumbnail-error-wrapper').find('.action-text').html()
+                .trim()).toEqual(
                     'The selected image must be smaller than ' +
-                    videoThumbnailView.getVideoImageMaxSize().humanize + '.';
+                    videoThumbnailView.getVideoImageMaxSize().humanize + '.'
                 );
             });
 
@@ -296,9 +305,10 @@ define(
                     .fileupload('add', {files: [createFakeImageFile(VIDEO_IMAGE_MIN_BYTES, 'mov/mp4')]});
 
                 // Verify error message
-                expect($videoListEl.find('.thumbnail-error-wrapper').find('.action-text').html().trim()).toEqual(
+                expect($videoListEl.find('.thumbnail-error-wrapper').find('.action-text').html()
+                .trim()).toEqual(
                     'This image file type is not supported. Supported file types are ' +
-                    videoThumbnailView.getVideoImageSupportedFileFormats().humanize + '.';
+                    videoThumbnailView.getVideoImageSupportedFileFormats().humanize + '.'
                 );
             });
 

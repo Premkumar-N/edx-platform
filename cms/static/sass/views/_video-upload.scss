@@ -220,6 +220,16 @@
     }
 
     &.requirements {
+      .requirements-text {
+        font-weight: 600;
+      }
+      .requirements-instructions {
+        font-size: 15px;
+        font-family: "Open Sans";
+        text-align: left;
+        color: #4c4c4c;
+        line-height: 1.5;
+      }
       .video-duration {
         opacity: 0;
       }
