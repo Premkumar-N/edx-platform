@@ -152,6 +152,76 @@ class TestGetPrograms(CacheIsolationTestCase):
         self.assertEqual(actual_program, expected_program)
         self.assertFalse(mock_warning.called)
 
+    @mock.patch(UTILS_MODULE + '.get_programs')
+    @mock.patch(UTILS_MODULE + '.get_program_types')
+    def test_get_programs_with_type(self, mock_get_program_types, mock_get_programs, mock_warning, _mock_info):
+        """Verify get_programs_with_type returns the expected list of programs."""
+        programs_with_program_type = []
+        programs = ProgramFactory.create_batch(2)
+        program_types = []
+
+        for program in programs:
+            program_type = ProgramTypeFactory(name=program['type'])
+            program_types.append(program_type)
+
+            program_with_type = copy.deepcopy(program)
+            program_with_type['type'] = program_type
+            programs_with_program_type.append(program_with_type)
+
+        mock_get_programs.return_value = programs
+        mock_get_program_types.return_value = program_types
+
+        actual = get_programs_with_type()
+
+        self.assertEqual(actual, programs_with_program_type)
+
+    @mock.patch(UTILS_MODULE + '.get_programs')
+    @mock.patch(UTILS_MODULE + '.get_program_types')
+    def test_get_programs_with_type_exclude_hidden(self, mock_get_program_types, mock_get_programs, mock_warning, _mock_info):
+        """Verify get_programs_with_type returns the expected list of programs with include_hidden=False."""
+        programs_with_program_type = []
+        programs = [ProgramFactory(hidden=False), ProgramFactory(hidden=True)]
+        program_types = []
+
+        for program in programs:
+            if program.get('hidden', False):
+                continue
+
+            program_type = ProgramTypeFactory(name=program['type'])
+            program_types.append(program_type)
+
+            program_with_type = copy.deepcopy(program)
+            program_with_type['type'] = program_type
+            programs_with_program_type.append(program_with_type)
+
+        mock_get_programs.return_value = programs
+        mock_get_program_types.return_value = program_types
+
+        actual = get_programs_with_type(include_hidden=False)
+        self.assertEqual(actual, programs_with_program_type)
+
+    @mock.patch(UTILS_MODULE + '.get_programs')
+    @mock.patch(UTILS_MODULE + '.get_program_types')
+    def test_get_programs_with_type_include_hidden(self, mock_get_program_types, mock_get_programs, mock_warning, _mock_info):
+        """Verify get_programs_with_type returns the expected list of programs with include_hidden=True."""
+        programs_with_program_type = []
+        programs = [ProgramFactory(hidden=False), ProgramFactory(hidden=True)]
+        program_types = []
+
+        for program in programs:
+            program_type = ProgramTypeFactory(name=program['type'])
+            program_types.append(program_type)
+
+            program_with_type = copy.deepcopy(program)
+            program_with_type['type'] = program_type
+            programs_with_program_type.append(program_with_type)
+
+        mock_get_programs.return_value = programs
+        mock_get_program_types.return_value = program_types
+
+        actual = get_programs_with_type(include_hidden=True)
+        self.assertEqual(actual, programs_with_program_type)
+
 
 @skip_unless_lms
 @mock.patch(UTILS_MODULE + '.get_edx_api_data')
