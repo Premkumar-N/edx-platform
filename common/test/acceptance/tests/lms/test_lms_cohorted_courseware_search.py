@@ -117,7 +117,8 @@ class CoursewareSearchCohortTest(ContainerBase):
         self.course_home_page.visit()
         self.course_home_page.search_for_term(term)
         course_search_results_page = CourseSearchResultsPage(self.browser, self.course_id).wait_for_page()
-        return course_search_results_page.search_results.html[0]
+        results = course_search_results_page.search_results.html
+        return results[0] if len(results) > 0 else []
 
     def populate_course_fixture(self, course_fixture):
         """

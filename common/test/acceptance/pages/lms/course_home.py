@@ -51,6 +51,7 @@ class CourseHomePage(CoursePage):
         self.q(css='.search-form > .search-input').fill(search_term)
         self.q(css='.search-form > .search-button').click()
 
+
 class CourseOutlinePage(PageObject):
     """
     Course outline fragment of page.
