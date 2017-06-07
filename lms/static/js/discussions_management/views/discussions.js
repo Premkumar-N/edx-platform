@@ -92,10 +92,14 @@
                 },
 
                 cohortStateUpdate: function(state) {
+                    var cohortIndex;
                     if (state.is_cohorted && !this.isSchemeAvailable(COHORT)) {
-                       this.discussionSettings.attributes.available_division_schemes.push(COHORT);
+                        this.discussionSettings.attributes.available_division_schemes.push(COHORT);
                     } else if (!state.is_cohorted && this.getSelectedScheme() !== COHORT) {
-                       this.discussionSettings.attributes.available_division_schemes.pop(COHORT);
+                        cohortIndex = this.discussionSettings.attributes.available_division_schemes.indexOf(COHORT);
+                        if (cohortIndex > -1) {
+                            this.discussionSettings.attributes.available_division_schemes.splice(cohortIndex, 1);
+                        }
                     }
 
                     if (!this.isSchemeAvailable(ENROLLMENT_TRACK)) {
