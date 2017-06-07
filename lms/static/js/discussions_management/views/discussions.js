@@ -43,6 +43,10 @@
                     }));
                     this.updateTopicVisibility(this.getSelectedScheme(), this.getTopicNav());
                     this.renderTopics();
+
+                    if (this.isSchemeAvailable(COHORT)) {
+                        this.showCohortSchemeControl(true);
+                    }
                     return this;
                 },
 
@@ -88,6 +92,12 @@
                 },
 
                 cohortStateUpdate: function(state) {
+                    if (state.is_cohorted && !this.isSchemeAvailable(COHORT)) {
+                       this.discussionSettings.attributes.available_division_schemes.push(COHORT);
+                    } else if (!state.is_cohorted && this.getSelectedScheme() !== COHORT) {
+                       this.discussionSettings.attributes.available_division_schemes.pop(COHORT);
+                    }
+
                     if (!this.isSchemeAvailable(ENROLLMENT_TRACK)) {
                         this.showDiscussionManagement(state.is_cohorted);
                     }
