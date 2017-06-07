@@ -1300,8 +1300,8 @@ class ContentStoreTest(ContentStoreTestCase, XssTestMixin):
 
         self.assertGreater(len(instructor_role.users_with_role()), 0)
 
-        # Now delete course with remove_instructors set to false and check
-        delete_course(course_id, self.user.id, remove_instructors=False)
+        # Now delete course with keep_instructors set to true and check
+        delete_course(course_id, self.user.id, keep_instructors=True)
 
         # Update our cached user since its roles have changed
         self.user = User.objects.get_by_natural_key(self.user.natural_key()[0])
