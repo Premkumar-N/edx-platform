@@ -26,7 +26,7 @@ from path import Path as path
 
 from common.test.utils import XssTestMixin
 from contentstore.tests.utils import AjaxEnabledTestClient, CourseTestCase, get_url, parse_json
-from contentstore.utils import delete_course_and_groups, reverse_course_url, reverse_url
+from contentstore.utils import delete_course, reverse_course_url, reverse_url
 from contentstore.views.component import ADVANCED_COMPONENT_TYPES
 from course_action_state.managers import CourseActionStateItemNotFoundError
 from course_action_state.models import CourseRerunState, CourseRerunUIStateManager
@@ -1223,7 +1223,7 @@ class ContentStoreTest(ContentStoreTestCase, XssTestMixin):
         test_course_data = self.assert_created_course(number_suffix=uuid4().hex)
         course_id = _get_course_id(self.store, test_course_data)
         self.assertTrue(are_permissions_roles_seeded(course_id))
-        delete_course_and_groups(course_id, self.user.id)
+        delete_course(course_id, self.user.id)
         # should raise an exception for checking permissions on deleted course
         with self.assertRaises(ItemNotFoundError):
             are_permissions_roles_seeded(course_id)
@@ -1235,7 +1235,7 @@ class ContentStoreTest(ContentStoreTestCase, XssTestMixin):
 
         # unseed the forums for the first course
         course_id = _get_course_id(self.store, test_course_data)
-        delete_course_and_groups(course_id, self.user.id)
+        delete_course(course_id, self.user.id)
         # should raise an exception for checking permissions on deleted course
         with self.assertRaises(ItemNotFoundError):
             are_permissions_roles_seeded(course_id)
@@ -1255,7 +1255,7 @@ class ContentStoreTest(ContentStoreTestCase, XssTestMixin):
         self.assertTrue(CourseEnrollment.is_enrolled(self.user, course_id))
         self.assertTrue(self.user.roles.filter(name="Student", course_id=course_id))
 
-        delete_course_and_groups(course_id, self.user.id)
+        delete_course(course_id, self.user.id)
         # check that user's enrollment for this course is not deleted
         self.assertTrue(CourseEnrollment.is_enrolled(self.user, course_id))
         # check that user has form role "Student" for this course even after deleting it
@@ -1277,13 +1277,37 @@ class ContentStoreTest(ContentStoreTestCase, XssTestMixin):
         self.assertGreater(len(instructor_role.users_with_role()), 0)
 
         # Now delete course and check that user not in instructor groups of this course
-        delete_course_and_groups(course_id, self.user.id)
+        delete_course(course_id, self.user.id)
 
         # Update our cached user since its roles have changed
         self.user = User.objects.get_by_natural_key(self.user.natural_key()[0])
 
         self.assertFalse(instructor_role.has_user(self.user))
         self.assertEqual(len(instructor_role.users_with_role()), 0)
+
+    def test_course_access_groups_on_course_only_delete(self):
+        """
+        Test that course deletion can be done in way that users from 'instructor' and 'staff' groups
+        of this course are NOT removed.
+        """
+        test_course_data = self.assert_created_course(number_suffix=uuid4().hex)
+        course_id = _get_course_id(self.store, test_course_data)
+
+        # Add user in possible groups and check that user in instructor groups of this course
+        instructor_role = CourseInstructorRole(course_id)
+
+        auth.add_users(self.user, instructor_role, self.user)
+
+        self.assertGreater(len(instructor_role.users_with_role()), 0)
+
+        # Now delete course with remove_instructors set to false and check
+        delete_course(course_id, self.user.id, remove_instructors=False)
+
+        # Update our cached user since its roles have changed
+        self.user = User.objects.get_by_natural_key(self.user.natural_key()[0])
+
+        self.assertTrue(instructor_role.has_user(self.user))
+        self.assertGreater(len(instructor_role.users_with_role()), 0)
 
     def test_create_course_after_delete(self):
         """
@@ -1292,7 +1316,7 @@ class ContentStoreTest(ContentStoreTestCase, XssTestMixin):
         test_course_data = self.assert_created_course()
         course_id = _get_course_id(self.store, test_course_data)
 
-        delete_course_and_groups(course_id, self.user.id)
+        delete_course(course_id, self.user.id)
 
         self.assert_created_course()
 
