@@ -73,11 +73,6 @@ def get_request_or_stub():
     request = crum.get_current_request()
 
     if request is None:
-        log.warning(
-            "Could not retrieve the current request. "
-            "A stub request will be created instead using settings.SITE_NAME. "
-            "This should be used *only* in test cases, never in production!"
-        )
 
         # The settings SITE_NAME may contain a port number, so we need to
         # parse the full URL.
