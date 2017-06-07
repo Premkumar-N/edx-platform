@@ -16,6 +16,7 @@ from xmodule.modulestore.django import modulestore
 from lms.djangoapps.instructor_task.models import InstructorTask
 from lms.djangoapps.instructor_task.tasks import (
     rescore_problem,
+    override_problem_score,
     reset_problem_attempts,
     delete_problem_state,
     send_bulk_course_email,
@@ -114,6 +115,28 @@ def submit_rescore_problem_for_student(request, usage_key, student, only_if_high
     task_class = rescore_problem
     task_input, task_key = encode_problem_and_student_input(usage_key, student)
     task_input.update({'only_if_higher': only_if_higher})
+    return submit_task(request, task_type, task_class, usage_key.course_key, task_input, task_key)
+
+
+# Disabling invalid-name because this fn name is longer than 30 chars.
+def submit_override_problem_score_for_student(request, usage_key, student, score):  # pylint: disable=invalid-name
+    """
+    Request a problem score override as a background task.
+
+    The problem score will be overridden for the specified student only.
+    Parameters are the `course_id`, the `problem_url`, the `student` as
+    a User object, and the score override desired.
+    The url must specify the location of the problem, using i4x-type notation.
+
+    ItemNotFoundException is raised if the problem doesn't exist, or AlreadyRunningError
+    if this task is already running for this student, or NotImplementedError if
+    the problem is not a ScorableXBlock.
+    """
+
+    task_type = 'override_problem_score'
+    task_class = override_problem_score
+    task_input, task_key = encode_problem_and_student_input(usage_key, student)
+    task_input.update({'score': score})
     return submit_task(request, task_type, task_class, usage_key.course_key, task_input, task_key)
 
 
