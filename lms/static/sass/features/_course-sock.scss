@@ -3,42 +3,46 @@
   position: relative;
   width: 100%;
   margin-top: $baseline;
+  max-width: 1180px;
+  margin: $baseline auto 0;
 
-  button {
+  .action-toggle-verification-sock {
+    position: absolute;
+    top: (-1 * $baseline);
+    left: 50%;
+    width: ($baseline * 15);
+    margin-left: (-1 * $baseline * 15/2);
+    color: $button-bg-hover-color;
     background-color: $success-color;
     border-color: $success-color;
+    background-image: none;
+    box-shadow: none;
     outline: none;
     -webkit-transition: background-color 0.5s;
     transition: background-color 0.5s;
 
-    &:hover {
-      color: $button-bg-hover-color;
-      background-color: $success-color-hover;
-      background-image: none;
-      box-shadow: none;
-    }
-  }
-
-  .action-toggle-verification-sock {
-    position: absolute;
-    top: (-1 * $baseline * 5/4);
-    left: 50%;
-    width: ($baseline * 15);
-    margin-left: (-1 * $baseline * 15/2);
-
-    &.active, &:active, &:focus {
-      background-color: $button-bg-hover-color;
+    &.active{
       color: $success-color;
+      background-color: $button-bg-hover-color;
       border-color: $success-color;
       background-image: none;
       box-shadow: none;
 
       &:hover {
-        background-color: $success-color-hover;
         color: $button-bg-hover-color;
+        background-color: $success-color-hover;
+        border-color: $success-color-hover;
         background-image: none;
         box-shadow: none;
       }
+    }
+
+    &:hover {
+      color: $button-bg-hover-color;
+      background-color: $success-color-hover;
+      border-color: $success-color-hover;
+      background-image: none;
+      box-shadow: none;
     }
   }
 
@@ -97,6 +101,15 @@
       .action-upgrade-certificate {
         @include float(right);
         margin-top: $baseline;
+        background-color: $success-color;
+        border-color: $success-color;
+        background-image: none;
+        box-shadow: none;
+
+        &:hover {
+          background-color: $success-color-hover;
+          border-color: $success-color-hover;
+        }
       }
     }
   }
@@ -111,9 +124,13 @@
     border-bottom: none;
 
     .action-toggle-verification-sock {
+      top: (-1 * $baseline * 5/4);
+
       &:not(.active) {
         color: $button-bg-hover-color;
         background-color: $success-color;
+        box-shadow: none;
+        border: 1px solid $success-color;
 
         &:hover {
           background-color: $success-color-hover;

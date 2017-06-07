@@ -60,12 +60,10 @@ from openedx.core.djangolib.markup import HTML
         </div>
     </div>
     % endif
-    <script>
-        var toggleActionButton = $(".action-toggle-verification-sock");
-        var verificationSock = $('.verification-sock .verification-main-panel');
-        toggleActionButton.on('click', () => {
-            toggleActionButton.toggleClass("active");
-            verificationSock.slideToggle(400);
-        });
-    </script>
 </%block>
+
+<%static:webpack entry="CourseSock">
+    new CourseSock({
+        el:'.verification-sock'
+    });
+</%static:webpack>

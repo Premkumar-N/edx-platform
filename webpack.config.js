@@ -19,6 +19,7 @@ var wpconfig = {
 
     entry: {
         CourseOutline: './openedx/features/course_experience/static/course_experience/js/CourseOutline.js',
+        CourseSock: './openedx/features/course_experience/static/course_experience/js/CourseSock.js',
         Import: './cms/static/js/features/import/factories/import.js'
     },
 
@@ -127,7 +128,8 @@ var wpconfig = {
     },
 
     externals: {
-        gettext: 'gettext'
+        gettext: 'gettext',
+        jquery: 'jQuery'
     },
 
     watchOptions: {

@@ -34,6 +34,7 @@ from openedx.core.djangoapps.crawlers.models import CrawlersConfig
 from openedx.core.djangoapps.monitoring_utils import set_custom_metrics_for_course_key
 from openedx.features.enterprise_support.api import data_sharing_consent_required
 from openedx.features.course_experience import UNIFIED_COURSE_VIEW_FLAG
+from openedx.features.course_experience.views.course_sock import CourseSockFragmentView
 from request_cache.middleware import RequestCache
 from shoppingcart.models import CourseRegistrationCode
 from student.views import is_course_blocked
@@ -354,6 +355,9 @@ class CoursewareIndex(View):
             self.course,
             table_of_contents['chapters'],
         )
+
+        courseware_context['course_sock_fragment'] = CourseSockFragmentView().render_to_fragment(
+            request, course=self.course, course_id=unicode(self.course_key))
 
         # entrance exam data
         self._add_entrance_exam_to_context(courseware_context)

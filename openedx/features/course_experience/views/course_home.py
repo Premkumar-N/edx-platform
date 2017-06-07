@@ -100,14 +100,14 @@ class CourseHomeFragmentView(EdxFragmentView):
             request, course_id=course_id, **kwargs
         )
 
-        # Render the verification sock as a fragment
-        course_sock_fragment = CourseSockFragmentView().render_to_fragment(request, course_id=course_id, **kwargs)
-
         # Render the course dates as a fragment
         dates_fragment = CourseDatesFragmentView().render_to_fragment(request, course_id=course_id, **kwargs)
 
         # TODO: Use get_course_overview_with_access and blocks api
         course = get_course_with_access(request.user, 'load', course_key, check_if_enrolled=True)
+
+        # Render the verification sock as a fragment
+        course_sock_fragment = CourseSockFragmentView().render_to_fragment(request, course_id=course_id, course=course, **kwargs)
 
         # Get the handouts
         handouts_html = get_course_info_section(request, request.user, course, 'handouts')
