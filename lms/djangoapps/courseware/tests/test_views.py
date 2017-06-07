@@ -210,8 +210,8 @@ class IndexQueryTestCase(ModuleStoreTestCase):
     NUM_PROBLEMS = 20
 
     @ddt.data(
-        (ModuleStoreEnum.Type.mongo, 10, 145),
-        (ModuleStoreEnum.Type.split, 4, 145),
+        (ModuleStoreEnum.Type.mongo, 10, 147),
+        (ModuleStoreEnum.Type.split, 4, 147),
     )
     @ddt.unpack
     def test_index_query_counts(self, store_type, expected_mongo_query_count, expected_mysql_query_count):
@@ -572,16 +572,18 @@ class ViewsTestCase(ModuleStoreTestCase):
         """
         registration_price = 99
         self.course.cosmetic_display_price = 10
-        # Since registration_price is set, it overrides the cosmetic_display_price and should be returned
-        self.assertEqual(views.get_cosmetic_display_price(self.course, registration_price), "$99")
+        with patch('course_modes.models.CourseMode.min_course_price_for_currency', return_value=registration_price):
+            # Since registration_price is set, it overrides the cosmetic_display_price and should be returned
+            self.assertEqual(views.get_cosmetic_display_price(self.course), "$99")
 
         registration_price = 0
-        # Since registration_price is not set, cosmetic_display_price should be returned
-        self.assertEqual(views.get_cosmetic_display_price(self.course, registration_price), "$10")
+        with patch('course_modes.models.CourseMode.min_course_price_for_currency', return_value=registration_price):
+            # Since registration_price is not set, cosmetic_display_price should be returned
+            self.assertEqual(views.get_cosmetic_display_price(self.course), "$10")
 
         self.course.cosmetic_display_price = 0
         # Since both prices are not set, there is no price, thus "Free"
-        self.assertEqual(views.get_cosmetic_display_price(self.course, registration_price), "Free")
+        self.assertEqual(views.get_cosmetic_display_price(self.course), "Free")
 
     def test_jump_to_invalid(self):
         # TODO add a test for invalid location
@@ -1424,8 +1426,8 @@ class ProgressPageTests(ProgressPageBaseTests):
             self._get_progress_page()
 
     @ddt.data(
-        (False, 41, 27),
-        (True, 34, 23)
+        (False, 43, 27),
+        (True, 36, 23)
     )
     @ddt.unpack
     def test_progress_queries(self, enable_waffle, initial, subsequent):
