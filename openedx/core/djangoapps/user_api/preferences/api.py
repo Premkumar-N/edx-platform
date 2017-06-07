@@ -72,7 +72,7 @@ def get_user_preferences(requesting_user, username=None):
          UserAPIInternalError: the operation failed due to an unexpected error.
     """
     existing_user = _get_authorized_user(requesting_user, username, allow_staff=True)
-    return UserPreference.get_all_preferences(requesting_user)
+    return UserPreference.get_all_preferences(existing_user)
 
 
 @intercept_errors(UserAPIInternalError, ignore_errors=[UserAPIRequestError])
