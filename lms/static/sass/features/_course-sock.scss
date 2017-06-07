@@ -1,0 +1,129 @@
+.verification-sock {
+  display: inline-block;
+  position: relative;
+  width: 100%;
+  margin-top: $baseline;
+
+  button {
+    background-color: $success-color;
+    border-color: $success-color;
+    outline: none;
+    -webkit-transition: background-color 0.5s;
+    transition: background-color 0.5s;
+
+    &:hover {
+      color: $button-bg-hover-color;
+      background-color: $success-color-hover;
+      background-image: none;
+      box-shadow: none;
+    }
+  }
+
+  .action-toggle-verification-sock {
+    position: absolute;
+    top: (-1 * $baseline * 5/4);
+    left: 50%;
+    width: ($baseline * 15);
+    margin-left: (-1 * $baseline * 15/2);
+
+    &.active, &:active, &:focus {
+      background-color: $button-bg-hover-color;
+      color: $success-color;
+      border-color: $success-color;
+      background-image: none;
+      box-shadow: none;
+
+      &:hover {
+        background-color: $success-color-hover;
+        color: $button-bg-hover-color;
+        background-image: none;
+        box-shadow: none;
+      }
+    }
+  }
+
+  .verification-main-panel {
+    display: none;
+    overflow: hidden;
+    border-top: 1px solid $lms-border-color;
+    padding: ($baseline * 5/2) ($baseline * 2);
+
+    .verification-desc-panel {
+      color: $black-t3;
+      position: relative;
+
+      @media (max-width: 767px) {
+        .mini-cert {
+          display: none;
+        }
+      }
+
+      .mini-cert {
+        position: absolute;
+        top: $baseline;
+        right: ($baseline * 7/2);
+        width: ($baseline * 10);
+      }
+
+      h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+      }
+
+      h4 {
+        font-size: 1.25rem;
+        font-weight: 600;
+      }
+
+      .learner-story-container {
+        display: flex;
+        max-width: 630px;
+
+        .student-image {
+          padding: $baseline ($baseline * 3/2) 0 0;
+          height: ($baseline * 3);
+        }
+
+        .story-quote > .author{
+          display: inline-block;
+          margin-top: ($baseline / 4);
+        }
+
+        &:not(:first-child) {
+          margin-top: ($baseline * 2);
+        }
+      }
+
+      .action-upgrade-certificate {
+        @include float(right);
+        margin-top: $baseline;
+      }
+    }
+  }
+}
+
+// These overrides are for the courseware page,
+// that is based of version one of the scss files.
+.view-courseware {
+  .verification-sock {
+    margin-top: 0px;
+    border-top: none;
+    border-bottom: none;
+
+    .action-toggle-verification-sock {
+      &:not(.active) {
+        color: $button-bg-hover-color;
+        background-color: $success-color;
+
+        &:hover {
+          background-color: $success-color-hover;
+        }
+      }
+    }
+
+    .verification-main-panel {
+      border-top: 0px;
+      border-bottom: 1px solid $lms-border-color;
+    }
+  }
+}
