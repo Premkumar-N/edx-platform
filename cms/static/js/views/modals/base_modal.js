@@ -21,6 +21,7 @@
  *   primaryActionButtonType: A string to be used as type for primary action button.
  *   primaryActionButtonTitle: A string to be used as title for primary action button.
  *   showEditorModeButtons: Whether to show editor mode button in the modal header.
+ *   modalTop: Modal specific top.
  */
 define(['jquery', 'underscore', 'gettext', 'js/views/baseview'],
     function($, _, gettext, BaseView) {
@@ -37,6 +38,7 @@ define(['jquery', 'underscore', 'gettext', 'js/views/baseview'],
                 modalType: 'generic',
                 modalSize: 'lg',
                 title: '',
+                modalTop: 0,
                 modalWindowClass: '.modal-window',
                 // A list of class names, separated by space.
                 viewSpecificClasses: '',
@@ -187,7 +189,7 @@ define(['jquery', 'underscore', 'gettext', 'js/views/baseview'],
                 top = (availableHeight - modalHeight) / 2;
 
                 modalWindow.css({
-                    top: top + $(window).scrollTop(),
+                    top: top + $(window).scrollTop() - this.options.modalTop,
                     left: left + $(window).scrollLeft()
                 });
             }

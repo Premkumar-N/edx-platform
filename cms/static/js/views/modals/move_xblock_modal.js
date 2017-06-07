@@ -30,6 +30,7 @@ function($, Backbone, _, gettext, BaseView, XBlockViewUtils, MoveXBlockUtils, Ht
         options: $.extend({}, BaseModal.prototype.options, {
             modalName: 'move-xblock',
             modalSize: 'lg',
+            modalTop: 110,
             showEditorModeButtons: false,
             addPrimaryActionButton: true,
             primaryActionButtonType: 'move',
